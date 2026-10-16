@@ -1,0 +1,11 @@
+{
+ "render_s": 1029.2352685928345,
+ "volume_url": "s3://vesuvius-challenge-open-data/PHerc0343/volumes/20250521140437-8.640um-1.2m-116keV-masked.zarr/",
+ "outward_agreement": 0.9973897911832946,
+ "shape": [
+  66,
+  2455,
+  5641
+ ],
+ "valid_fraction": 0.6472321680336466
+}

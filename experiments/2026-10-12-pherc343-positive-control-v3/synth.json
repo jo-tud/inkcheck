@@ -1,0 +1,145 @@
+{
+ "planted": {
+  "folds": {
+   "A": {
+    "n_letters": 9,
+    "n_bands": 18,
+    "n_pos_px": 50526,
+    "n_neg_px": 21099,
+    "box_auc": {
+     "observed": 1.0,
+     "null_p50": 0.6049,
+     "null_p99": 0.8827,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.5805,
+     "null_p50": 0.4993,
+     "null_p99": 0.6036,
+     "p_value": 0.0509,
+     "n_null": 1000
+    },
+    "meets_bar": false
+   },
+   "B": {
+    "n_letters": 8,
+    "n_bands": 16,
+    "n_pos_px": 66919,
+    "n_neg_px": 24677,
+    "box_auc": {
+     "observed": 1.0,
+     "null_p50": 0.6016,
+     "null_p99": 0.8672,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.6322,
+     "null_p50": 0.496,
+     "null_p99": 0.6065,
+     "p_value": 0.004,
+     "n_null": 1000
+    },
+    "meets_bar": true
+   }
+  },
+  "passes_bar": false
+ },
+ "planted_fill": {
+  "folds": {
+   "A": {
+    "n_letters": 9,
+    "n_bands": 18,
+    "n_pos_px": 50526,
+    "n_neg_px": 21099,
+    "box_auc": {
+     "observed": 1.0,
+     "null_p50": 0.6235,
+     "null_p99": 0.9074,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.9762,
+     "null_p50": 0.5041,
+     "null_p99": 0.6921,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "meets_bar": true
+   },
+   "B": {
+    "n_letters": 8,
+    "n_bands": 16,
+    "n_pos_px": 66919,
+    "n_neg_px": 24677,
+    "box_auc": {
+     "observed": 1.0,
+     "null_p50": 0.6094,
+     "null_p99": 0.8984,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.9825,
+     "null_p50": 0.4888,
+     "null_p99": 0.7161,
+     "p_value": 0.001,
+     "n_null": 1000
+    },
+    "meets_bar": true
+   }
+  },
+  "passes_bar": true
+ },
+ "noise": {
+  "folds": {
+   "A": {
+    "n_letters": 9,
+    "n_bands": 18,
+    "n_pos_px": 50526,
+    "n_neg_px": 21099,
+    "box_auc": {
+     "observed": 0.5309,
+     "null_p50": 0.6173,
+     "null_p99": 0.8457,
+     "p_value": 0.7852,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.4383,
+     "null_p50": 0.5005,
+     "null_p99": 0.5883,
+     "p_value": 0.966,
+     "n_null": 1000
+    },
+    "meets_bar": false
+   },
+   "B": {
+    "n_letters": 8,
+    "n_bands": 16,
+    "n_pos_px": 66919,
+    "n_neg_px": 24677,
+    "box_auc": {
+     "observed": 0.4922,
+     "null_p50": 0.6016,
+     "null_p99": 0.8359,
+     "p_value": 0.8392,
+     "n_null": 1000
+    },
+    "pixel_auc": {
+     "observed": 0.496,
+     "null_p50": 0.4972,
+     "null_p99": 0.5772,
+     "p_value": 0.5185,
+     "n_null": 1000
+    },
+    "meets_bar": false
+   }
+  },
+  "passes_bar": false
+ },
+ "ok": false,
+ "ok_fill": true
+}

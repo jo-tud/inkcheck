@@ -1,0 +1,91 @@
+{
+ "note": "diagnostic written after the main scores; same folds, bands and surrogate null as results.json",
+ "ens4_d+1_raw_z": {
+  "A": {
+   "n_letters": 9,
+   "n_bands": 18,
+   "n_pos_px": 50526,
+   "n_neg_px": 21099,
+   "box_auc": {
+    "observed": 0.9938,
+    "null_p50": 0.6235,
+    "null_p99": 0.9198,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "pixel_auc": {
+    "observed": 0.7903,
+    "null_p50": 0.5004,
+    "null_p99": 0.6924,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "meets_bar": true
+  },
+  "B": {
+   "n_letters": 8,
+   "n_bands": 16,
+   "n_pos_px": 66919,
+   "n_neg_px": 24677,
+   "box_auc": {
+    "observed": 0.9922,
+    "null_p50": 0.6406,
+    "null_p99": 0.9453,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "pixel_auc": {
+    "observed": 0.6434,
+    "null_p50": 0.4996,
+    "null_p99": 0.6888,
+    "p_value": 0.0609,
+    "n_null": 1000
+   },
+   "meets_bar": false
+  }
+ },
+ "ens4_d+1_overlay_alpha": {
+  "A": {
+   "n_letters": 9,
+   "n_bands": 18,
+   "n_pos_px": 50526,
+   "n_neg_px": 21099,
+   "box_auc": {
+    "observed": 0.9938,
+    "null_p50": 0.5926,
+    "null_p99": 0.8889,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "pixel_auc": {
+    "observed": 0.7307,
+    "null_p50": 0.4955,
+    "null_p99": 0.5919,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "meets_bar": true
+  },
+  "B": {
+   "n_letters": 8,
+   "n_bands": 16,
+   "n_pos_px": 66919,
+   "n_neg_px": 24677,
+   "box_auc": {
+    "observed": 0.9922,
+    "null_p50": 0.6055,
+    "null_p99": 0.918,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "pixel_auc": {
+    "observed": 0.6275,
+    "null_p50": 0.4998,
+    "null_p99": 0.5618,
+    "p_value": 0.001,
+    "n_null": 1000
+   },
+   "meets_bar": true
+  }
+ }
+}
