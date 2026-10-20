@@ -35,7 +35,8 @@ construction.
   - hecate: `scrollprize/hecate` 9.6 µm, run through its own `hecate.py`, input prepared as in
     `hecate_prep.py`, output resized to the render grid.
 - Sweep: ink9-42, ink9-43 and dnative at d = −15..+15. **hecate at d = +1 only** (the reference's
-  setting): one hecate map takes about 75 min on CPU, so a full sweep would take about 39 h.
+  setting): one hecate map takes about 1.8 h on CPU (6608 s in `results.json`), so a full sweep would
+  take about 57 h.
 - Ensembles, as in the reference's `ensemble_maps.py`: per model a z-score over all its maps, then
   the mean. `ens3` = dnative + ink9-42 + ink9-43 (all depths); `ens4` = all four (d = +1 only).
   One difference: hecate's z-score statistics come from d = +1 only.
@@ -60,6 +61,9 @@ construction.
 - **Pixel AUC**: letter-box pixels against band pixels of the same fold.
 - **Held-out protocol** (as v2): choose the configuration (ink9-42, ink9-43, ink9-mean, dnative or
   ens3, at any depth) with the best box AUC on one fold, score it on the other fold. Both ways round.
+  Ties are broken by the selection fold's pixel AUC, then by the smaller |d| (`run.py`, `best_on`).
+  They happen: 9 configurations tie at box AUC 1.0 on fold A and 4 on fold B, so the reported
+  numbers depend on the tie-break (see Result).
 - **Null (surrogate maps)**: keep the labels, replace the held-out part of the map by a surrogate
   with the same power spectrum and the same value distribution (random Fourier phases, then the
   original values re-assigned by rank). 1000 draws. This keeps the blob size and contrast of the
@@ -126,15 +130,25 @@ Scored 2026-10-13. Scan PHerc0343 `20250521140437`, 8.64 µm, 116 keV, level 0, 
 For the held-out maps, a shuffle of the box labels gives p99 0.79 (B) / 0.78 (A), both p = 0.001;
 v2's random-box null gives p99 0.98 / 0.95 for box AUC, p = 0.015 on both folds.
 
+Tie-break. Across the 9 configurations tied at box AUC 1.0 on fold A, the held-out fold B scores
+range from 0.93 to 0.98 (box) and 0.576 to 0.648 (pixel); across the 4 tied on fold B, fold A scores
+0.92–0.99 (box) and 0.707–0.771 (pixel) (`sweep` in `results.json`). So another tie-break could
+have put fold B pixel AUC above the 0.60 bar. All fold B values stay under 0.66, the null p99 of the
+chosen map; the null was not computed for the other tied maps.
+
 ![reading-orientation maps](fig_reading.png)
 
 `fig_reading.png`, top to bottom: the two held-out maps, my ens4 at the reference setting, and the
-published map, in reading orientation. Orange: letter boxes. Blue: between-line bands.
+published map, in reading orientation. Orange: letter boxes. Blue: between-line bands. Pink: the
+guard band; fold A is right of it, fold B left of it. Each held-out panel is held out on one side
+only: the top panel (chosen on A) on the left, the second (chosen on B) on the right. The other side
+is the data the configuration was chosen on.
 
 In short:
 
-- **At box level the control works on held-out data.** Held-out box AUC is 0.98 (fold B) and 0.96
-  (fold A), above a null p99 of 0.91 and 0.90.
+- **At box level the maps agree with the letter boxes on held-out data.** Held-out box AUC is 0.98
+  (fold B) and 0.96 (fold A), above a null p99 of 0.91 and 0.90. This is agreement with the
+  letter-box placement, not ink (see Limits).
 - **At pixel level it fails on one fold.** Fold B's held-out pixel AUC is 0.58, under 0.60 and under
   the null p99 of 0.66. No ink9 or dnative configuration gets fold B pixel AUC above 0.66 at any
   depth. hecate alone at d = +1 reaches 0.71, but it was not in the selection set, so it does not
@@ -150,7 +164,7 @@ In short:
   (one volume, CT match r = 0.96), label registration (box AUC ≈ 1.0 on both folds), negatives that
   are hidden text (the surrogate null does not depend on unlabelled text).
 - **Not tested:** the exact dense_native training file (not public); a hecate depth sweep (about
-  39 h on CPU); labels for the rest of the text in the area.
+  57 h on CPU); labels for the rest of the text in the area.
 
 ### Why the published map passes and mine does not (diagnostic)
 
@@ -161,7 +175,7 @@ test (`diag_overlay.json`).
 
 | ens4 d = +1, fold B | Box AUC (null p99) | Pixel AUC (null p50 / p99, p) | Meets the thresholds |
 |---|---|---|---|
-| raw z-score (as in the table above) | 0.99 (0.95) | 0.643 (0.50 / 0.69, 0.061) | no |
+| raw z-score (as in the table above; new null draw) | 0.99 (0.95) | 0.643 (0.50 / 0.69, 0.061) | no |
 | same map, published display transform | 0.99 (0.92) | 0.628 (0.50 / 0.56, 0.001) | yes |
 | published map | 0.99 (0.95) | 0.652 (0.50 / 0.58, 0.001) | yes |
 
@@ -169,6 +183,11 @@ Fold A passes in all three rows. The pixel AUC itself barely moves (0.643 → 0.
 What moves is the null: a map that is mostly exactly zero gives a much narrower surrogate
 distribution (p99 0.69 → 0.56). So the gap comes from the display transform, not from signal my
 pipeline loses; the parity check (r = 0.84) says the same.
+
+The raw row is the same map as the ens4 fold B row of the table above, but its null is a separate
+set of 1000 surrogate draws, so its percentiles differ: null p99 0.69 here vs 0.70 there, p 0.061 vs
+0.048, box null p99 0.945 vs 0.938. Null percentiles move by about 0.01 between draws, and p values
+near 0.05 can fall on either side of it.
 
 It also shows a weakness of this test: the surrogate null on pixel AUC is not invariant to monotone
 transforms with ties, so thresholding a map can turn a fail into a pass. A future version has to fix
@@ -182,7 +201,13 @@ the map transform before it is scored.
   fold split controls the choice of model and depth; it does not remove this.
 - **Box level only.** Pixel-level claims would need a new threshold, with the map transform fixed in
   advance.
-- **Selection is tuned on this area.** The held-out protocol picks the best of 5 models × 31 depths
-  on one fold. hecate ran at one depth only.
+- **The ink-transplant calibration failed.** Planted PHerc. 343 ink, and in a second run synthetic
+  ink strokes, scored with the same two held-out configurations, were not found reliably at box
+  level, and letter-shaped shams with no net added density were flagged about as often as planted
+  ink. These detectors do not yet tell ink from letter-shaped texture. Those runs are not part of
+  this repository.
+- **Selection is tuned on this area.** The held-out protocol picks the best of 5 configurations
+  (3 models, the mean of the two ink_9um seeds, and a 3-model ensemble) × 31 depths on one fold, and
+  the pick was a tie at box AUC 1.0 (see Result). hecate ran at one depth only.
 - A full clean re-run (render 17 min, about 1 h dnative, about 1.8 h hecate on CPU) was not repeated;
   the quickstart reproduces the two held-out numbers from a fresh clone.

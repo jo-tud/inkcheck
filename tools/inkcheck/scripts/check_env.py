@@ -1,6 +1,6 @@
 """Print the pinned versions and settings an inkcheck run depends on, and fail if they are off.
 
-Default command of the Docker image; also runs on bare metal after setup.sh. Checks the villa
+Runs after setup.sh (setup.sh calls it at the end). Checks the villa
 commit, the ink_9um checkpoint hashes, and that the device resolves the way the GPU rule says.
 Exit code 1 on any mismatch.
 

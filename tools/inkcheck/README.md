@@ -27,6 +27,11 @@ other.
 
 ![held-out maps and the published map](../../experiments/2026-10-12-pherc343-positive-control-v3/fig_reading.png)
 
+In reading orientation fold A is right of the pink guard lines and fold B is left of them. Each of
+the two held-out panels is held out on one side only: the top panel (chosen on fold A) on the left,
+the second panel (chosen on fold B) on the right. The other side of each panel is the data the
+configuration was chosen on.
+
 | Held-out map (chosen on the other fold) | Fold | Box AUC (null p50 / p99, p) | Pixel AUC (null p50 / p99, p) |
 |---|---|---|---|
 | dnative, reverse, d = +3 | B | 0.98 (0.64 / 0.91, 0.002) | 0.58 (0.50 / 0.66, 0.16) |
@@ -34,7 +39,16 @@ other.
 
 I fixed the thresholds before running the evaluation (box AUC ≥ 0.80 and pixel AUC ≥ 0.60 on both
 folds, both above the null's 99th percentile). Box AUC passes on both folds. Pixel AUC fails on fold
-B (0.58). Looking at the maps, letters are readable in some boxes only.
+B (0.58, also under the null's 99th percentile of 0.66). Looking at the maps, letters are readable in
+some boxes only.
+
+The selection was a tie: on the selection fold, 9 configurations reach box AUC 1.0 on fold A and 4
+on fold B. The tie is broken by the selection fold's pixel AUC, then by the smaller |d|; this uses no
+held-out data, but the reported numbers depend on it. Across the 9 tied choices on fold A, the
+held-out fold B scores range from 0.93 to 0.98 (box) and 0.58 to 0.65 (pixel); across the 4 tied
+choices on fold B, fold A scores 0.92–0.99 (box) and 0.71–0.77 (pixel). So another tie-break could
+have put fold B pixel AUC above the 0.60 bar. All fold B values stay under 0.66, the null's 99th
+percentile for the chosen map; the null was not computed for the other tied maps.
 
 My four-model ensemble reproduces the published ink map at Pearson r = 0.84. That checks the
 reproduction (same checkpoints, same render geometry, same transform); it is not an ink measurement.
@@ -47,7 +61,7 @@ training lists of ink_9um and dense_native do not name PHerc. 343; hecate's trai
 published, so for hecate I cannot tell. The two held-out rows above do not use hecate; the r = 0.84
 ensemble does.
 
-Scan PHerc0343 `20250521140437-8.640um-1.2m-116keV-masked`, 8.64 µm, 116 keV, level 0. Normals point
+Volume PHerc0343 `20250521140437-8.640um-1.2m-116keV-masked`, 8.64 µm, 116 keV, level 0. Normals point
 outward (away from the scroll axis), and the model window is fed in reverse layer order. Depth sweep
 d = −15..+15 voxels. Folds split by raw column: A 380–2486 (9 letters, 18 between-line bands), guard
 2486–2610, B 2610–6021 (8 letters, 16 bands). Null: 1000 surrogate maps with the same power spectrum
@@ -210,8 +224,13 @@ They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's
   ensemble map of the models I score (see above). Nothing in v0.1 shows ink in those boxes
   independently of these four models.
 - **Box level only.** The pixel-level check failed on one of the two folds (fold B pixel AUC 0.58,
-  under 0.60 and under the null's 99th percentile of 0.66). So the result answers "does a
-  letter-sized region hold ink", not "which pixels are ink".
+  under 0.60 and under the null's 99th percentile of 0.66). So the result shows agreement with the
+  letter-box placement at box level, not ink.
+- **The ink-transplant calibration failed.** I planted known PHerc. 343 ink, and in a second run
+  synthetic ink strokes, at other places in the same area and scored them with the same two held-out
+  configurations. Planted ink was not found reliably at box level, and letter-shaped shams (letter
+  shapes with no net added density) were flagged about as often as planted ink. So these detectors do
+  not yet tell ink from letter-shaped texture. Those runs are not part of this repository.
 - **Letters are only partly legible.** In the maps, letters are readable in some boxes only.
 - **The null is sensitive to the display transform.** The surrogate null on pixel AUC changes under
   monotone transforms with ties. Putting my ensemble through the published display transform (which
@@ -221,6 +240,12 @@ They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's
 - **Only PHerc. 343 so far.** This is a positive control on one area of one scan, with labels and a
   mesh made by someone else. It shows that my code reproduces the published maps there. It says
   nothing yet about ink in any other scroll, segment or scan.
+- **The PHerc. 343 signal does not survive another scan's grey values.** In a separate test I
+  remapped the PHerc. 343 area to the grey-value distribution of each of nine other 8.64 µm, 116 keV
+  scans and ran ink_9um seeds 42 and 43 on it: the known ink was no longer detected on any of the
+  nine. Matching the grey values on papyrus only did not bring it back (0 of 2 scans). So an empty
+  map on another scan can come from the scan's grey values alone. That test is not part of this
+  repository.
 - **A check on a second scroll did not pass.** On three held-out PHerc. 139 segments (w024, w047,
   w053; scan at 9.362 µm, 113 keV), dense_native agreed with a separate 59 keV, 1.129 µm ink map at
   AUC 0.915, 0.899 and 0.763. I had asked for ≥ 0.80 on all three, so the check failed on one of the
@@ -228,7 +253,8 @@ They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's
   measured on w024 and w053. The 59 keV map's training data is not published, so even a pass would
   have shown agreement between models, not ink. That check is not part of this repository.
 - **The configuration selection is tuned on this area.** The held-out protocol picks the best of
-  5 models × 31 depths on one fold and scores the other. hecate ran at one depth only (d = +1, the
+  5 configurations (3 models, the mean of the two ink_9um seeds, and a 3-model ensemble) × 31 depths
+  on one fold and scores the other (155 rows in `results.json`). hecate ran at one depth only (d = +1, the
   reference author's setting).
 - **The sheet certificate (`inkcheck.sheetcert`) does not work as a certificate yet**: it fails its
   own half-spacing null on PHerc0139, PHerc0846A and PHerc1203 (see the module docstring).
@@ -243,8 +269,9 @@ derived from that data. They fall under the same terms: attribution, non-commerc
 repository does not contain or redistribute scan data. The code streams it from the public bucket at
 run time.
 
-Scan used by v0.1: PHerc. 343, scan `20250509220833-8.640um-1.2m-116keV` (ESRF, 8.64 µm, 116 keV),
-volume `s3://vesuvius-challenge-open-data/PHerc0343/volumes/20250521140437-8.640um-1.2m-116keV-masked.zarr`.
+Scan used by v0.1: PHerc. 343 (ESRF, 8.64 µm, 116 keV), acquisition scan
+`20250509220833-8.640um-1.2m-116keV`, reconstructed volume `20250521140437`
+(`s3://vesuvius-challenge-open-data/PHerc0343/volumes/20250521140437-8.640um-1.2m-116keV-masked.zarr`).
 The volume is pinned by id and URL (`inkcheck.catalog.REFERENCE_VOLUME_ID`, `reference_volume()`),
 so a later re-publication of PHerc0343 cannot silently change the scan under the mesh coordinates.
 As scrollprize.org/data asks, cite the dataset:

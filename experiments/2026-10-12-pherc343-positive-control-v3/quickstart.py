@@ -1,7 +1,7 @@
 """PHerc. 343 positive-control quickstart: the two held-out evaluations, from a fresh clone, on CPU
 (about 16 min measured, see tools/inkcheck/README.md).
 
-The full run (`run.py`, about 7 h on CPU from a clean clone, 3 h of it v3-specific) sweeps 4 models x 31 depths, picks one configuration per fold and scores it
+The full run (`run.py`, about 7 h on CPU from a clean clone, 3 h of it v3-specific) sweeps 5 configurations (3 models, the 2-seed mean, a 3-model ensemble) x 31 depths, picks one configuration per fold and scores it
 on the other fold. This script skips the sweep: it takes the two configurations that sweep chose (recorded in
 results.json), renders the area, computes only the three maps they need and scores them with the same code, the same
 labels and the same random seed as run.py. It then compares every number with results.json.

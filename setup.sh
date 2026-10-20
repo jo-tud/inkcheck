@@ -112,7 +112,7 @@ HF_HUB_DISABLE_XET=1 "$VILLA_DIR/vesuvius/.venv/bin/hf" download scrollprize/ink
 echo "--- checkpoints ---"
 ls -la data/models/ink_9um/hybrid_3d2d-seed42/step-075000.pth data/models/ink_9um/hybrid_3d2d-seed43/step-075000.pth
 
-# Warn rather than stop, like the villa drift check above; the Docker image treats this as fatal.
+# Warn rather than stop, like the villa drift check above.
 "$VILLA_DIR/vesuvius/.venv/bin/python" tools/inkcheck/scripts/check_env.py \
   || echo "WARNING: check_env.py found a mismatch (see above); results may not reproduce." >&2
 
