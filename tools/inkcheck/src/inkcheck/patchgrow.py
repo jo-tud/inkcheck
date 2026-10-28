@@ -8,7 +8,8 @@ competes nearby — so the patch stops at a sheet contact instead of jumping to 
 
 Coordinates: everything public is level-0 voxels (z, y, x) of the CT volume. The prediction is
 read at its own level (``pred_scale`` level-0 voxels per prediction voxel; 4 for the m7 runs on
-2.4 um volumes, which were computed on level 2).
+2.4 um volumes, which were computed on level 2) Prediction voxel k is centred at level-0
+``pred_scale * k + (pred_scale - 1) / 2``, as a pyramid level (``volume.to_level``).
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ from scipy import ndimage, signal
 
 from .geometry import GeometryParams, analyze_surface
 from .surface import Surface, normals, shifted
-from .volume import Volume, ZarrLevel
+from .volume import Volume, ZarrLevel, from_level, to_level
 
 
 @dataclass
@@ -65,7 +66,7 @@ def grow(pred: ZarrLevel, seed_l0, params: GrowParams | None = None, pred_scale:
     K = gp.half_nodes
     reach = K * gp.step
     H = reach + 40  # a tilted plane's corners may leave the box; those nodes count as no-hit
-    sp = np.asarray(seed_l0, float) / pred_scale
+    sp = to_level(np.asarray(seed_l0, float), pred_scale)
     c = np.round(sp).astype(int)
     box = pred.read(c[0] - H, c[0] + H, c[1] - H, c[1] + H, c[2] - H, c[2] + H) > 0
     org = c - H
@@ -149,7 +150,7 @@ def grow(pred: ZarrLevel, seed_l0, params: GrowParams | None = None, pred_scale:
     ii, jj = np.meshgrid(np.arange(-K, K + 1), np.arange(-K, K + 1), indexing="ij")
     P = (p0[None, None, :] + (ii * gp.step)[..., None] * u + (jj * gp.step)[..., None] * v
          + hgt[..., None] * n)
-    zyx = (P + org) * pred_scale
+    zyx = from_level(P + org, pred_scale)
     zyx[state != 1] = np.nan
     rows = np.nonzero((state == 1).any(1))[0]
     cols = np.nonzero((state == 1).any(0))[0]
@@ -208,7 +209,7 @@ def snap(surf: Surface, ct: Volume, gp: GrowParams, tile: int = 12, workers: int
 
 
 def _scaled(surf: Surface, f: float) -> Surface:
-    return Surface(zyx=surf.zyx / f, step=surf.step / f, meta=surf.meta, name=surf.name)
+    return Surface(zyx=to_level(surf.zyx, f), step=surf.step / f, meta=surf.meta, name=surf.name)
 
 
 def single_sheet_fields(surf: Surface, ct_l1: Volume, workers: int = 4) -> dict:

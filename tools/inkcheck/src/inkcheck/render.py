@@ -14,7 +14,7 @@ import numpy as np
 from scipy import ndimage
 
 from .surface import Surface
-from .volume import Volume, linear_stencil_chunks
+from .volume import Volume, linear_stencil_chunks, to_level
 
 
 def _interp_grid(field: np.ndarray, rows: np.ndarray, cols: np.ndarray) -> np.ndarray:
@@ -58,7 +58,7 @@ def render_region(surf: Surface, n: np.ndarray, vol: Volume, r0: int, r1: int, c
     P = p[valid]
     N = nn[valid]
     pts = P[None, :, :] + np.asarray(offsets, float)[:, None, None] * N[None, :, :]
-    flat = pts.reshape(-1, 3) / vol.scale
+    flat = to_level(pts.reshape(-1, 3), vol.scale)
     lo = np.floor(flat.min(0)).astype(int) - 2
     hi = np.ceil(flat.max(0)).astype(int) + 3
     # fetch only the chunks the trilinear stencil touches; the rest of the box stays fill value and

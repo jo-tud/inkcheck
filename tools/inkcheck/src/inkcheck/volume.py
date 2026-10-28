@@ -416,6 +416,26 @@ class ZarrLevel:
         return out
 
 
+def to_level(pts_l0, scale) -> np.ndarray:
+    """Level-0 (z, y, x) coordinates -> index coordinates of a pyramid level with ``scale`` level-0
+    voxels per voxel.
+
+    Voxel k of an organiser level is the (rint) mean of level-0 voxels scale*k ... scale*k + scale - 1,
+    so its centre sits at level-0 scale*k + (scale - 1)/2, not at scale*k.
+    At scale 1 it returns exactly what the old ``p / 1`` gave, input dtype kept, so level 0 is unchanged.
+    """
+    if scale == 1:
+        return np.asarray(pts_l0) / 1
+    return (np.asarray(pts_l0, dtype=np.float64) - (scale - 1) / 2) / scale
+
+
+def from_level(pts_l, scale) -> np.ndarray:
+    """Inverse of :func:`to_level`: level index coordinates -> level-0 (z, y, x). Old ``p * 1`` at scale 1."""
+    if scale == 1:
+        return np.asarray(pts_l) * 1
+    return np.asarray(pts_l, dtype=np.float64) * scale + (scale - 1) / 2
+
+
 class Volume:
     """A scroll volume (or prediction) at one resolution level, with point sampling."""
 
@@ -437,9 +457,9 @@ class Volume:
         """Sample at level-0 (z, y, x) coordinates; returns float32 of shape pts.shape[:-1].
 
         Reads the bounding box of all points at once, so callers should pass spatially compact
-        point sets (one tile at a time).
+        point sets (one tile at a time). Level > 0 is sampled at voxel centres (:func:`to_level`).
         """
-        pts = np.asarray(pts_zyx, dtype=np.float64) / self.scale
+        pts = to_level(np.asarray(pts_zyx, dtype=np.float64), self.scale)
         flat = pts.reshape(-1, 3)
         ok = np.all(np.isfinite(flat), axis=1)
         out = np.full(flat.shape[0], np.nan, dtype=np.float32)

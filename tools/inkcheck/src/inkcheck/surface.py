@@ -15,6 +15,8 @@ import numpy as np
 import tifffile
 from scipy import ndimage
 
+from .volume import from_level
+
 
 @dataclass
 class Surface:
@@ -131,7 +133,7 @@ def estimate_axis(volume_lowres, level: int, z_step_l0: int = 256):
         if m.sum() < 50:
             continue
         yy, xx = np.nonzero(m)
-        pts.append((zc * s, yy.mean() * s, xx.mean() * s))
+        pts.append(tuple(from_level((zc, yy.mean(), xx.mean()), s)))  # level voxel centres
     if not pts:
         raise ValueError("volume looks empty at this level")
     return axis_from_umbilicus(np.array(pts))

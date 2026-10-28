@@ -1,9 +1,12 @@
-# inkcheck v0.1
+# inkcheck v0.1.2
 
-A CPU harness that reproduces the published PHerc. 343 First Letters result
-(https://github.com/Nieuwlaar/pherc343-first-letters) from the public scan, and scores it on
-held-out data against a surrogate null. No GPU needed: a fresh clone gets to the held-out numbers in
-about 16 min on my machine (details under Quickstart).
+**What v0.1 measures.** Whether my own code, run from the public scan, re-makes the published
+PHerc. 343 First Letters ink map (https://github.com/Nieuwlaar/pherc343-first-letters) and the
+scores that map gets against the reference author's letter boxes, on a part of the area I did not use
+to choose model and depth, against a surrogate null. It does not measure ink: the letter boxes were
+drawn on the published map of the same models I run. No GPU needed: a fresh clone gets to the
+held-out numbers in 14–17 min on 12 threads once the packages are downloaded (details under
+Quickstart).
 
 Where this is going: a diagnostic for why ink detection comes up empty on a surface patch. A blank
 ink map has several possible causes, and today they are hard to tell apart:
@@ -20,10 +23,23 @@ ink-model wrapper, sheet-profile and patch-growing code, an ink-transplant modul
 ## The PHerc. 343 result
 
 `experiments/2026-10-12-pherc343-positive-control-v3/`: inkcheck renders the reference area from the
-public scan, runs four published 9 µm ink models on CPU (ink9-42, ink9-43, dense_native, hecate) and
-scores the maps against the reference repository's 18 letter boxes. To keep the choice of model and
-depth honest, I split the area into two folds, chose the model and depth on one fold and scored the
-other.
+public scan, runs four published ink models on CPU (ink9-42, ink9-43 and dense_native at 9 µm,
+hecate at 9.6 µm) and scores the maps against the reference repository's 18 letter boxes (17
+scored; one crosses the fold guard). To keep the choice of model and depth honest, I split the area
+into two folds, chose the model and depth on one fold and scored the other.
+
+My four-model ensemble re-makes the published ink map at Pearson r = 0.84 (same checkpoints, same
+render geometry, same transform). That checks the reproduction; it is not an ink measurement. I have
+no reference value for the r an exact re-run should reach. One of the four models (hecate) has no
+published training list, so I cannot tell whether it saw PHerc. 343; the training lists of ink_9um
+and dense_native do not name PHerc. 343. The two held-out rows below do not use hecate; the r = 0.84
+ensemble does.
+
+**The letter boxes are not ground truth.** The reference author drew them by hand on the published
+ink map, and that map is the mean of the same four models I run. So the box AUC below measures
+agreement between my maps and a person's box placement on that ensemble map, not independent
+evidence that the boxes hold ink. The fold split controls the choice of model and depth; it does not
+remove this.
 
 ![held-out maps and the published map](../../experiments/2026-10-12-pherc343-positive-control-v3/fig_reading.png)
 
@@ -32,15 +48,16 @@ the two held-out panels is held out on one side only: the top panel (chosen on f
 the second panel (chosen on fold B) on the right. The other side of each panel is the data the
 configuration was chosen on.
 
-| Held-out map (chosen on the other fold) | Fold | Box AUC (null p50 / p99, p) | Pixel AUC (null p50 / p99, p) |
-|---|---|---|---|
-| dnative, reverse, d = +3 | B | 0.98 (0.64 / 0.91, 0.002) | 0.58 (0.50 / 0.66, 0.16) |
-| ink9-mean, reverse, d = −1 | A | 0.96 (0.61 / 0.90, 0.003) | 0.73 (0.50 / 0.67, 0.001) |
+| Held-out map (chosen on the other fold) | Fold | Letter boxes / between-line bands | Box AUC (null p50 / p99, p) | Pixel AUC (null p50 / p99, p) |
+|---|---|---|---|---|
+| dnative, reverse, d = +3 | B | 8 / 16 | 0.98 (0.64 / 0.91, 0.002) | 0.58 (0.50 / 0.66, 0.16) |
+| ink9-mean, reverse, d = −1 | A | 9 / 18 | 0.96 (0.61 / 0.90, 0.003) | 0.73 (0.50 / 0.67, 0.001) |
 
 I fixed the thresholds before running the evaluation (box AUC ≥ 0.80 and pixel AUC ≥ 0.60 on both
 folds, both above the null's 99th percentile). Box AUC passes on both folds. Pixel AUC fails on fold
-B (0.58, also under the null's 99th percentile of 0.66). Looking at the maps, letters are readable in
-some boxes only.
+B (0.58, also under the null's 99th percentile of 0.66). So the check I registered fails as a whole
+(it needed both levels on both folds), and I rate the box-level agreement as low confidence. My own
+unblinded look at the maps: letters are readable in some boxes only (not a scored test).
 
 The selection was a tie: on the selection fold, 9 configurations reach box AUC 1.0 on fold A and 4
 on fold B. The tie is broken by the selection fold's pixel AUC, then by the smaller |d|; this uses no
@@ -49,17 +66,6 @@ held-out fold B scores range from 0.93 to 0.98 (box) and 0.58 to 0.65 (pixel); a
 choices on fold B, fold A scores 0.92–0.99 (box) and 0.71–0.77 (pixel). So another tie-break could
 have put fold B pixel AUC above the 0.60 bar. All fold B values stay under 0.66, the null's 99th
 percentile for the chosen map; the null was not computed for the other tied maps.
-
-My four-model ensemble reproduces the published ink map at Pearson r = 0.84. That checks the
-reproduction (same checkpoints, same render geometry, same transform); it is not an ink measurement.
-
-**The letter boxes are not ground truth.** The reference author drew them by hand on the published
-ink map, and that map is the mean of the same four models I run. So the box AUC measures agreement
-between my maps and a person's box placement on that ensemble map, not independent evidence that the
-boxes hold ink. The fold split controls the choice of model and depth; it does not remove this. The
-training lists of ink_9um and dense_native do not name PHerc. 343; hecate's training data is not
-published, so for hecate I cannot tell. The two held-out rows above do not use hecate; the r = 0.84
-ensemble does.
 
 Volume PHerc0343 `20250521140437-8.640um-1.2m-116keV-masked`, 8.64 µm, 116 keV, level 0. Normals point
 outward (away from the scroll axis), and the model window is fed in reverse layer order. Depth sweep
@@ -71,11 +77,16 @@ test it builds on.
 
 ## Quickstart: fresh clone to the held-out numbers
 
-Linux, x86-64, [uv](https://docs.astral.sh/uv/), git, curl, about 15 GB free disk, network access to
-GitHub, Hugging Face and the public scroll bucket. No GPU.
+Linux, x86-64, [uv](https://docs.astral.sh/uv/), git, curl, 16 GB RAM, about 15 GB free disk
+(after a run the clone holds about 9.3 GB and the chunk cache 2.0 GiB, plus the uv package cache),
+network access to GitHub, Hugging Face and the public scroll bucket. No GPU.
+
+Input: none of your own. v0.1 runs one fixed PHerc. 343 area, with the reference repository's mesh,
+letter boxes and published map, and the public scan streamed over HTTPS. It has no tested command
+for your own segment yet.
 
 ```bash
-git clone <this repository> && cd <it>
+git clone https://github.com/jo-tud/inkcheck && cd inkcheck
 bash tools/inkcheck/quickstart.sh 2>&1 | tee quickstart.log
 ```
 
@@ -90,12 +101,16 @@ This one command:
    configurations need. It scores them with the experiment's own code and random seed and prints the
    table above. Each number is compared with `results.json`, and the command exits 1 if any differs.
 
-Measured on my machine (24 cores, 12 threads used), fresh clone, fresh venv, villa and the reference
-repository cloned from GitHub at their pinned commits: **14 min 18 s wall-clock (11 min 46 s of it
-the render, inference and scoring step), 8.7 GiB peak RAM** (largest process; the job's memory peak
-including file cache was 11.6 GB, so give it 16 GB). The uv package cache and the chunk cache were
-warm; an earlier run with an empty chunk cache took 16 min 19 s. On a new machine, add the download
-time for villa (about 775 MiB) and the venv packages (several GB, mostly torch).
+A good run ends with `ALL NUMBERS MATCH results.json` and exit code 0.
+
+Measured on 2026-10-20 for v0.1 (the code is unchanged since): an anonymous clone in an empty
+container (12 CPUs, 16 GB memory limit, no swap, no GPU, empty package and chunk caches) took
+**16 min 29 s wall-clock, all downloads included (10 min 55 s of it the render, inference and
+scoring), 8.1 GB in the largest process**. The container's memory peak, file cache included,
+reached the 16 GB limit without running out of memory, so give it 16 GB. The same test on the
+pre-release tree four days earlier took 23 min 13 s; the difference is mostly download time, which
+depends on your connection (villa is about 775 MiB, the venv packages several GB, mostly torch). A
+run with warm package and chunk caches took 14 min 18 s.
 
 The quickstart does **not** re-run the configuration selection. It takes the two configurations the
 full sweep chose (recorded in `results.json`) and reproduces their held-out scores.
@@ -112,7 +127,7 @@ up to about **7 h**:
 | ink9-42/43 sweep (v2 `run.py`, forward and reverse) | 124 × about 110 s | 3.9 h |
 | dnative sweep (reverse) | 31 × about 110 s | 57 min |
 | hecate, d = +1 | 1 | 1.8 h |
-| synthetic check, scoring, figures | | about 15 min |
+| scoring and figures (plus the synthetic check, not timed) | | 13 min |
 
 ```bash
 bash tools/inkcheck/quickstart.sh       # setup, reference repository, dense_native (and the quickstart)
@@ -142,8 +157,11 @@ one file at a time (`HF_HUB_DISABLE_XET=1`, `--max-workers 1`): at most 3 open c
 
 - The venv comes from villa's `uv.lock` at the pinned commit (`setup.sh`, `VILLA_COMMIT`), installed
   with `uv sync --python 3.14.4 --extra models --extra tests` (torch 2.12.1, numpy 2.4.6, scipy 1.18.0
-  in the tested venv). The interpreter is pinned to the patch release (`INKCHECK_PYTHON`, default
-  3.14.4); villa's own `.python-version` only says `3.14`, which let a fresh run pick 3.14.8.
+  in the tested venv). `check_env.py` (also run by `setup.sh`) prints torch as `2.12.1+cu130`. That
+  is the same PyPI wheel, `torch==2.12.1` in `uv.lock` and `requirements.lock`; `+cu130` is the CUDA
+  13.0 build tag in the wheel's own version string and shows on CPU-only runs too. The interpreter
+  is pinned to the patch release (`INKCHECK_PYTHON`, default 3.14.4); villa's own `.python-version`
+  only says `3.14`, which let a fresh run pick 3.14.8.
 - `tools/inkcheck/requirements.lock` lists every package and version in the venv the fresh-clone
   quickstart ran in (`uv pip freeze`). Use it to check or rebuild an environment:
   `uv pip install -r tools/inkcheck/requirements.lock` (local-path lines aside).
@@ -173,14 +191,14 @@ chunk, so a box read only fetches the chunks it actually touches.
   and bytes a render of a real mesh will pull, and how many are already cached, without downloading
   them.
 - `inkcheck.render` fetches only the chunks its trilinear samples touch (`linear_stencil_chunks`),
-  not every chunk of each tile's bounding box. On the PHerc. 343 patch that is 1,015 chunks / 2.0 GiB
-  instead of 1,985 / 3.9 GiB, with the same output bit for bit. `render(..., sparse=False)` restores
-  the old reader.
+  not every chunk of each tile's bounding box, with the same output bit for bit (a test checks
+  this). `chunk_footprint.py` above prints the chunk and byte counts of both readers for a mesh.
+  `render(..., sparse=False)` restores the old reader.
 - `python tools/inkcheck/scripts/bench_render.py --tifxyz ... --umbilicus ... --region ...
   [--reader stencil|bbox] [--cache EMPTY_DIR] [--reference layers.npy]`: times a real render, counts
   the bytes it downloads, and checks the output against a saved render.
 
-Never download a whole volume. One scroll is about 1 TB.
+Never download a whole volume.
 
 ## Compute (`inkcheck.gpu`)
 
@@ -192,7 +210,7 @@ cpu_threads=...)` resolves compute explicitly instead of grabbing whatever is av
 - `INKCHECK_DEVICE` (default `cpu`): asking for a CUDA device raises unless
   `INKCHECK_ALLOW_LOCAL_GPU=1`.
 - `INKCHECK_VRAM_GB`: caps the process to that much VRAM and refuses to start if it is not free.
-- `python -m inkcheck.gpu`: CPU thread default and, if GPU use is enabled, free/total VRAM per card.
+- `python -m inkcheck.gpu`: CPU thread default and, if GPU use is enabled, free/total VRAM per GPU.
 - `python tools/inkcheck/scripts/bench_cpu_run.py`: times one render + inference run on CPU and
   reports wall-clock and peak RSS.
 
@@ -211,8 +229,10 @@ needs the repository layout (root `setup.sh`, the v2 and v3 experiment folders).
 
 ## Tests
 
-`pytest tools/inkcheck/tests`: 18 tests, no network, no torch, about 3 s (chunk de-duplication,
-sparse reads, patch growing, sheet certification, and a smoke test of the `inkcheck` command). They cover
+`$PWD/external/villa/vesuvius/.venv/bin/python -m pytest tools/inkcheck/tests`, from the root of
+the clone after the quickstart (or, in any Python ≥ 3.11 venv: `python -m pip install -e
+"tools/inkcheck[tests]" && python -m pytest tools/inkcheck/tests`): 27 tests, no network, no torch, about 3 s (chunk de-duplication, sparse reads, pyramid level centres, patch growing, sheet
+certification, and a smoke test of the `inkcheck` command). They cover
 the reader, two geometry helpers and the command line. The command-line test runs the installed
 `inkcheck` executable only when this checkout is the installed one; otherwise it skips and says so.
 They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's comparison with
@@ -226,26 +246,32 @@ They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's
 - **Box level only.** The pixel-level check failed on one of the two folds (fold B pixel AUC 0.58,
   under 0.60 and under the null's 99th percentile of 0.66). So the result shows agreement with the
   letter-box placement at box level, not ink.
-- **The ink-transplant calibration failed.** I planted known PHerc. 343 ink, and in a second run
-  synthetic ink strokes, at other places in the same area and scored them with the same two held-out
-  configurations. Planted ink was not found reliably at box level, and letter-shaped shams (letter
-  shapes with no net added density) were flagged about as often as planted ink. So these detectors do
-  not yet tell ink from letter-shaped texture. Those runs are not part of this repository.
-- **Letters are only partly legible.** In the maps, letters are readable in some boxes only.
+- **The ink-transplant calibration failed.** I planted PHerc. 343 letter signal (cut where these
+  models see ink), and in a second run synthetic ink strokes, at other places in the same area (60
+  locations per fold) and scored them with the same two held-out configurations. Planted ink was not
+  found reliably at box level, and letter-shaped shams (letter shapes with no net added density) were
+  flagged about as often as planted ink: on fold B 0.20 for shams against 0.22 for planted letter
+  signal; on fold A neither was flagged. So these detectors do not yet tell ink from letter-shaped
+  texture. Those runs are not part of this repository.
+- **Letters are only partly legible.** My own unblinded look at the maps: letters are readable in
+  some boxes only (not a scored test).
 - **The null is sensitive to the display transform.** The surrogate null on pixel AUC changes under
   monotone transforms with ties. Putting my ensemble through the published display transform (which
   sets 85 % of pixels to zero) turns the fold B pixel fail into a pass, mostly by narrowing the null
   (p99 0.69 → 0.56) rather than by raising the score (0.643 → 0.628). A future version has to fix the
-  map transform before scoring.
+  map transform before scoring. The null here is a second set of 1000 draws; for the same raw map
+  the scored run gives p99 0.70. Null percentiles move by about 0.01 between draws.
 - **Only PHerc. 343 so far.** This is a positive control on one area of one scan, with labels and a
   mesh made by someone else. It shows that my code reproduces the published maps there. It says
   nothing yet about ink in any other scroll, segment or scan.
 - **The PHerc. 343 signal does not survive another scan's grey values.** In a separate test I
   remapped the PHerc. 343 area to the grey-value distribution of each of nine other 8.64 µm, 116 keV
-  scans and ran ink_9um seeds 42 and 43 on it: the known ink was no longer detected on any of the
-  nine. Matching the grey values on papyrus only did not bring it back (0 of 2 scans). So an empty
-  map on another scan can come from the scan's grey values alone. That test is not part of this
-  repository.
+  scans and ran ink_9um seeds 42 and 43 on it: they no longer reproduced their own PHerc. 343 output
+  on any of the nine (those letter rows come from ink_9um's own map, so this measures the model's
+  robustness, not ink). A content-matched remap (papyrus and non-papyrus fitted separately) passed on
+  0 of 2 scans: on PHerc. 175B the 343 rows came back above the bar but a forward-direction peak
+  scored higher; on PHerc. 1218 they stayed below the null. So an empty map on another scan can come
+  from the scan's grey values alone. That test is not part of this repository.
 - **A check on a second scroll did not pass.** On three held-out PHerc. 139 segments (w024, w047,
   w053; scan at 9.362 µm, 113 keV), dense_native agreed with a separate 59 keV, 1.129 µm ink map at
   AUC 0.915, 0.899 and 0.763. I had asked for ≥ 0.80 on all three, so the check failed on one of the
@@ -257,7 +283,10 @@ They do **not** cover the ink models or the PHerc. 343 scoring; the quickstart's
   on one fold and scores the other (155 rows in `results.json`). hecate ran at one depth only (d = +1, the
   reference author's setting).
 - **The sheet certificate (`inkcheck.sheetcert`) does not work as a certificate yet**: it fails its
-  own half-spacing null on PHerc0139, PHerc0846A and PHerc1203 (see the module docstring).
+  own half-spacing null on PHerc0139, PHerc0846A and PHerc1203 (H/F 0.65-0.85, where it needs 0.5
+  or less; see the module docstring). The PHerc0139 number was re-made after the fix that reads
+  pyramid levels above 0 at voxel centres; the other two were measured before that fix
+  (their surfaces are not on disk).
 - dense_native is rebuilt from its public release. The exact training checkpoint is not public.
 
 ## Data notice
@@ -295,15 +324,16 @@ inkcheck builds on other people's open work.
   (https://huggingface.co/scrollprize/ink_9um, MIT, Vesuvius Challenge; revision
   `7109667e2607db1b90c37c8b09cb876ea7fe7bb1`).
 - **dense_native**, step 16 000 (https://huggingface.co/Nieuwlaar/ink9um-dense-native, MIT, Erwin
-  Nieuwlaar). It is fine-tuned from KLAVIS's (DomRusso2) public `ink9um-dense` checkpoints and the
-  ink_9um checkpoints and labels. I rebuild it from the public safetensors with the reference
+  Nieuwlaar). Its model card says it is fine-tuned from KLAVIS's (DomRusso2) public `ink9um-dense`
+  checkpoints and the ink_9um checkpoints and labels. I rebuild it from the public safetensors with the reference
   repository's `rebuild_dense_native_pth.py`.
 - **Hecate 9.6 µm** (https://huggingface.co/scrollprize/hecate, MIT, Vesuvius Challenge), with its own
   `hecate.py`. It is used in the full run only, not in the quickstart.
 - **PHerc. 343 First Letters reference** by Erwin Nieuwlaar
   (https://github.com/Nieuwlaar/pherc343-first-letters, MIT, commit `e8370f1`). It provides the
   segment mesh (`concat_w047-w048_R5B2_z9500-11000.tifxyz`), the scroll axis (umbilicus), the 18
-  letter boxes I score against (drawn on the published ensemble map, not independent labels), and the
+  letter boxes (17 scored; one crosses the fold guard; drawn on the published ensemble map, not
+  independent labels), and the
   published ink map I compare against. The v3 experiment also follows its methods closely: the hecate
   input preparation follows `hecate_prep.py`, the per-model z-score ensemble follows
   `ensemble_maps.py`, and the overlay transform used for the parity check follows

@@ -1,9 +1,11 @@
 """Single-sheet certificate v2: is each node of a surface on one papyrus sheet?
 
 **Status (2026-10-13): this does not work as a certificate yet.** On PHerc0139, PHerc0846A and
-PHerc1203 it fails its own half-spacing null (H/F 0.63-0.85, where it needs 0.5 or less): these
+PHerc1203 it fails its own half-spacing null (H/F 0.65-0.85, where it needs 0.5 or less): these
 scrolls are dense with gap-bounded bands at 4.8 um. It stays here as a measuring tool (the nulls
 and the displacement sweep). The test runs behind this are not part of this repository.
+The PHerc0139 number (0.65) was re-made with the pyramid level-centre fix; the PHerc0846A
+and PHerc1203 numbers (0.81, 0.85) were measured before it, because their surfaces are not on disk.
 
 The v1 rule (one dominant CT peak near the node, ``patchgrow.single_sheet_fields``) does not
 discriminate at 2.4 µm: fibre texture gives several peaks per profile on and off the sheet
@@ -44,7 +46,7 @@ from scipy import ndimage
 
 from .geometry import _tangents
 from .surface import Surface, normals
-from .volume import Volume
+from .volume import Volume, to_level
 
 
 @dataclass
@@ -121,7 +123,7 @@ def sample_profiles(surf: Surface, vol: Volume, tiles: list[tuple[int, int]] | N
     Returns arrays over the sampled nodes plus their (row, col) and tile index.
     """
     sp = sp or SampleParams()
-    s = Surface(zyx=surf.zyx / vol.scale, step=surf.step / vol.scale, name=surf.name)
+    s = Surface(zyx=to_level(surf.zyx, vol.scale), step=surf.step / vol.scale, name=surf.name)
     n, t, b = _frames(s)
     H, W = s.shape
     if tiles is None:

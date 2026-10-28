@@ -161,8 +161,7 @@ In short:
 - **Depth.** Box AUC stays at 0.80 or more for d ≈ −7..+5 on both folds and drops to chance by
   d = −12.
 - **Ruled out:** sign convention (v2), depth offset (31-depth sweep), scan or resolution mismatch
-  (one volume, CT match r = 0.96), label registration (box AUC ≈ 1.0 on both folds), negatives that
-  are hidden text (the surrogate null does not depend on unlabelled text).
+  (one volume, CT match r = 0.96), negatives that are hidden text (the surrogate null does not depend on unlabelled text).
 - **Not tested:** the exact dense_native training file (not public); a hecate depth sweep (about
   57 h on CPU); labels for the rest of the text in the area.
 

@@ -4,6 +4,7 @@ import numpy as np
 
 from inkcheck import patchgrow as pg
 from inkcheck.surface import Surface
+from inkcheck.volume import from_level, to_level  # prediction voxel centres
 
 
 class FakePred:
@@ -28,10 +29,10 @@ class FakePred:
 def test_stays_on_sheet():
     pred = FakePred(gap=15)
     gp = pg.GrowParams(half_nodes=12)
-    zyx, st = pg.grow(pred, pred.c * 4, gp, pred_scale=4)
+    zyx, st = pg.grow(pred, from_level(pred.c, 4), gp, pred_scale=4)
     assert zyx is not None
     s = Surface(zyx=zyx, step=20.0)
-    pts = zyx[s.valid] / 4
+    pts = to_level(zyx[s.valid], 4)
     d = (pts - pred.c) @ pred.n
     assert s.valid.sum() > 0.8 * (2 * 12 + 1) ** 2
     assert np.abs(d).max() < 1.0  # never jumped to the plane 15 voxels away
@@ -40,5 +41,5 @@ def test_stays_on_sheet():
 
 def test_refuses_touching_sheets():
     pred = FakePred(gap=4)
-    zyx, st = pg.grow(pred, pred.c * 4, pg.GrowParams(half_nodes=12), pred_scale=4)
+    zyx, st = pg.grow(pred, from_level(pred.c, 4), pg.GrowParams(half_nodes=12), pred_scale=4)
     assert zyx is None or np.isfinite(zyx[..., 0]).sum() <= 1
